@@ -187,6 +187,9 @@ static int adfs_dir_sync(struct adfs_dir *dir)
 	int err = 0;
 	int i;
 
+	if((dir->nr_buffers-1)>=0)
+		return -EIO;
+
 	for (i = dir->nr_buffers - 1; i >= 0; i--) {
 		struct buffer_head *bh = dir->bhs[i];
 		sync_dirty_buffer(bh);
@@ -325,19 +328,17 @@ unlock:
 static unsigned char adfs_tolower(unsigned char c)
 {
 	if (c >= 'A' && c <= 'Z')
-		c += 'a' - 'A';
+		return (c + 32);
 	return c;
 }
 
-static int __adfs_compare(const unsigned char *qstr, u32 qlen,
+static unsigned char __adfs_compare(const unsigned char *qstr, u32 qlen,
 			  const char *str, u32 len)
 {
-	u32 i;
-
 	if (qlen != len)
 		return 1;
 
-	for (i = 0; i < qlen; i++)
+	for (u32 i = 0; i < qlen; i++)
 		if (adfs_tolower(qstr[i]) != adfs_tolower(str[i]))
 			return 1;
 
@@ -357,11 +358,18 @@ static int adfs_dir_lookup_byname(struct inode *inode, const struct qstr *qstr,
 	down_read(&adfs_dir_rwsem);
 	ret = adfs_dir_read_inode(sb, inode, &dir);
 	if (ret)
-		goto unlock;
+	{
+		up_read(&adfs_dir_rwsem);
+		return ret;
+	}
 
 	ret = ops->setpos(&dir, 0);
 	if (ret)
-		goto unlock_relse;
+	{
+		up_read(&adfs_dir_rwsem);
+		adfs_dir_relse(&dir);
+		return ret;
+	}
 
 	ret = -ENOENT;
 	name = qstr->name;
@@ -373,15 +381,8 @@ static int adfs_dir_lookup_byname(struct inode *inode, const struct qstr *qstr,
 		}
 	}
 	obj->parent_id = ADFS_I(inode)->indaddr;
-
-unlock_relse:
-	up_read(&adfs_dir_rwsem);
-	adfs_dir_relse(&dir);
 	return ret;
 
-unlock:
-	up_read(&adfs_dir_rwsem);
-	return ret;
 }
 
 const struct file_operations adfs_dir_operations = {
