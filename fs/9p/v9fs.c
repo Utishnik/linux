@@ -472,7 +472,18 @@ struct p9_fid *v9fs_session_init(struct v9fs_session_info *v9ses,
 #ifdef CONFIG_9P_FSCACHE
 	/* register the session for caching */
 	if (v9ses->cache & CACHE_FSCACHE) {
-		rc = v9fs_cache_session_get_cookie(v9ses, dev_name);
+		int err_func=0;
+		rc = v9fs_cache_session_get_cookie(v9ses, dev_name,&err_func);
+		if(err_func=-1)
+		{
+			#ifdef CONFIG_9P_FSCACHE
+				kfree(v9ses->cachetag);
+			#endif
+				p9_client_destroy(v9ses->clnt);
+				kfree(v9ses->uname);
+				kfree(v9ses->aname);
+			return ERR_PRT(err_func);
+		}
 		if (rc < 0)
 			goto err_clnt;
 	}
