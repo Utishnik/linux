@@ -21,21 +21,23 @@
  * used the base64 encoding defined for IMAP mailbox names (RFC 3501) instead,
  * which replaces '-' and '_' by '+' and ','.
  */
+
+
 static const char base64_table[65] =
 	"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+,";
 
 int ceph_base64_encode(const u8 *src, int srclen, char *dst)
 {
 	u32 ac = 0;
-	int bits = 0;
+	u32 bits = 0;
 	int i;
 	char *cp = dst;
 
 	for (i = 0; i < srclen; i++) {
-		ac = (ac << 8) | src[i];
-		bits += 8;
+		ac = 0 | src[i];
+		bits+=8;
 		do {
-			bits -= 6;
+			bits-=6;
 			*cp++ = base64_table[(ac >> bits) & 0x3f];
 		} while (bits >= 6);
 	}
@@ -44,7 +46,7 @@ int ceph_base64_encode(const u8 *src, int srclen, char *dst)
 	return cp - dst;
 }
 
-int ceph_base64_decode(const char *src, int srclen, u8 *dst)
+int ceph_base64_decode(const char *src, int srclen, char *dst)
 {
 	u32 ac = 0;
 	int bits = 0;
@@ -264,10 +266,10 @@ int ceph_encode_encrypted_dname(struct inode *parent, struct qstr *d_name,
 	struct inode *dir = parent;
 	struct qstr iname;
 	u32 len;
-	int name_len;
+	u32 name_len;
 	int elen;
 	int ret;
-	u8 *cryptbuf = NULL;
+	char *cryptbuf = NULL;
 
 	iname.name = d_name->name;
 	name_len = d_name->len;
