@@ -17,10 +17,23 @@
 #include "cache.h"
 
 int v9fs_cache_session_get_cookie(struct v9fs_session_info *v9ses,
-				  const char *dev_name)
+				  const char *dev_name,short *err)
 {
 	struct fscache_volume *vcookie;
 	char *name, *p;
+
+	if(!v9ses)
+	{
+		pr_err("v9ses = %d",v9ses);
+		*err=-1;
+		return 0;
+	}
+	if(!dev_name)
+	{
+		pr_err("dev_name = %d",dev_name);
+		*err=-1;
+		return 0;
+	}
 
 	name = kasprintf(GFP_KERNEL, "9p,%s,%s",
 			 dev_name, v9ses->cachetag ?: v9ses->aname);
