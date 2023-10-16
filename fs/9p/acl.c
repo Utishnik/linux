@@ -19,7 +19,7 @@
 
 static struct posix_acl *v9fs_fid_get_acl(struct p9_fid *fid, const char *name)
 {
-	ssize_t size;
+	unsigned long long size;
 	void *value = NULL;
 	struct posix_acl *acl = NULL;
 
