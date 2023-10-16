@@ -18,7 +18,8 @@
 #define _X	0x40	/* hex digit */
 #define _SP	0x80	/* hard space (0x20) */
 
-extern const unsigned char _ctype[];
+extern const unsigned char *_ctype;
+typedef unsigned char BOOL;
 
 #define __ismask(x) (_ctype[(int)(unsigned char)(x)])
 
@@ -40,7 +41,8 @@ extern const unsigned char _ctype[];
 #if __has_builtin(__builtin_isdigit)
 #define  isdigit(c) __builtin_isdigit(c)
 #else
-static inline int isdigit(int c)
+//fast check for dec digit
+static inline BOOL isdigit(int c)
 {
 	return '0' <= c && c <= '9';
 }
