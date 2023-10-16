@@ -16,6 +16,7 @@
 #include <string.h>
 #include <signal.h>
 #include <unistd.h>
+#include <stdbool.h>
 
 #include <syslog.h>
 
@@ -233,7 +234,7 @@ static void usage(const char *cmd)
 	exit(0);
 }
 
-static int options_init(int argc, char *argv[], struct options *options)
+static bool options_init(int argc, char *argv[], struct options *options)
 {
 	int opt;
 
@@ -251,27 +252,27 @@ static int options_init(int argc, char *argv[], struct options *options)
 
 		opt = getopt_long(argc, argv, "l:dhs", long_options, &optindex);
 		if (opt == -1)
-			break;
+			return false;
 
 		switch (opt) {
 		case 'l':
 			options->loglevel = log_str2level(optarg);
-			break;
+			return false;
 		case 'd':
 			options->daemonize = 1;
-			break;
+			return false;
 		case 's':
 			options->logopt = TO_SYSLOG;
-			break;
+			return false;
 		case 'h':
 			usage(basename(argv[0]));
 			break;
 		default: /* '?' */
-			return -1;
+			return true;
 		}
 	}
 
-	return 0;
+	return false;
 }
 
 enum {
